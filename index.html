@@ -217,9 +217,10 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
 /* LANÇAR */
 .lc-field{margin-bottom:14px}
 .lc-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:6px}
-.lc-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:10px 14px;border-radius:9px;outline:none;transition:border-color .2s}
+.lc-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:10px 14px;border-radius:9px;outline:none;transition:border-color .2s;-webkit-appearance:none}
 .lc-input:focus{border-color:var(--accent)}
 .lc-input[readonly]{color:var(--muted);cursor:default}
+.lc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .lc-preview{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:16px;margin-top:4px}
 .lc-preview-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:10px}
 .lc-preview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
@@ -230,9 +231,15 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
 .lc-btn:disabled{opacity:.4;cursor:default}
 .lc-btn.loading{opacity:.6;cursor:default}
 
-.lc-hist-row{display:grid;grid-template-columns:100px 1fr 80px 80px 80px;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px}
+.lc-hist-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lc-hist-row{display:grid;grid-template-columns:90px 90px 60px 60px 80px;gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap}
 .lc-hist-row:last-child{border-bottom:none}
 .lc-hist-row.header{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;padding-bottom:8px}
+
+@media(max-width:480px){
+  .lc-grid2{grid-template-columns:1fr}
+  .lc-preview-grid{grid-template-columns:1fr 1fr}
+}
 
 /* ANÁLISE */
 .analise-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
@@ -430,7 +437,7 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
         <input class="lc-input" type="text" id="lc-dia" readonly placeholder="Preenchido automaticamente">
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="lc-grid2">
         <div class="lc-field">
           <label class="lc-label">Horas Programadas</label>
           <input class="lc-input" type="number" id="lc-hprog" placeholder="3.0" step="0.1" min="0">
@@ -458,8 +465,10 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
     <!-- Histórico de lançamentos recentes -->
     <div class="panel">
       <div class="panel-title">Últimos Lançamentos <span class="panel-hint" id="lc-hist-info"></span></div>
-      <div id="lc-historico">
-        <div style="text-align:center;padding:30px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">Carregue os dados para ver o histórico</div>
+      <div class="lc-hist-wrap">
+        <div id="lc-historico">
+          <div style="text-align:center;padding:30px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">Carregue os dados para ver o histórico</div>
+        </div>
       </div>
     </div>
 
