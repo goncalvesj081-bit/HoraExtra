@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horas Extras</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0e0f13;--surface:#16181f;--surface2:#1e2029;--border:#2a2d38;
+    --accent:#f0c040;--blue:#5b8def;--green:#5ce07a;--red:#e05c5c;
+    --text:#e8eaf0;--muted:#6b7280;
+    --mono:'Space Mono',monospace;--sans:'Syne',sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
+
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:100}
+  .logo{font-size:17px;font-weight:800;color:var(--accent);letter-spacing:-.5px}
+  .logo span{color:var(--text)}
+  #status{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+  .dot.ok{background:var(--green)}.dot.err{background:var(--red)}.dot.spin{background:var(--accent);animation:blink 1s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .btn-refresh{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:6px;cursor:pointer;transition:border-color .2s}
+  .btn-refresh:hover{border-color:var(--accent);color:var(--accent)}
+
+  main{padding:26px 28px;max-width:1200px;margin:0 auto}
+  .controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+  .controls h1{font-size:20px;font-weight:800;flex:1;min-width:180px}
+  select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px;border-radius:6px;outline:none;cursor:pointer}
+  select:focus{border-color:var(--accent)}
+
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+  .kpi{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s}
+  .kpi:hover{border-color:var(--accent)}
+  .kpi::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:var(--accent)}
+  .kpi.blue::before{background:var(--blue)}.kpi.green::before{background:var(--green)}.kpi.red::before{background:var(--red)}
+  .kpi-label{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px}
+  .kpi-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1}
+  .kpi-val small{font-size:13px;color:var(--muted)}
+  .kpi-sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px}
+  .prog-wrap{margin-top:10px;background:var(--bg);border-radius:4px;height:4px}
+  .prog-bar{height:4px;border-radius:4px;transition:width .7s ease}
+  .pos{color:var(--green)}.neg{color:var(--red)}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+  .tab{font-family:var(--mono);font-size:12px;padding:7px 14px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s}
+  .tab:hover{border-color:var(--accent);color:var(--text)}
+  .tab.active{background:var(--accent);color:#0e0f13;border-color:var(--accent);font-weight:700}
+
+  .tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .tbl-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .tbl-head h2{font-size:14px;font-weight:700}
+  .tbl-head span{font-family:var(--mono);font-size:11px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  thead th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:9px 14px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2)}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+  tbody tr:last-child{border-bottom:none}
+  tbody tr:hover{background:var(--surface2)}
+  td{font-family:var(--mono);font-size:12px;padding:9px 14px}
+  td.r{text-align:right}td.mu{color:var(--muted)}td.zo{color:var(--border)}
+  .badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px}
+  .badge.we{background:#2a2050;color:#9b7ee8}.badge.wd{background:#1a2a3a;color:var(--blue)}
+
+  .pag{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:10px 14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:11px;color:var(--muted)}
+  .pag button{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:5px;cursor:pointer}
+  .pag button:hover{border-color:var(--accent)}
+  .pag button:disabled{opacity:.3;cursor:default}
+
+  #loading,#error-msg{text-align:center;padding:70px 20px;display:none}
+  #loading.show,#error-msg.show{display:block}
+  #loading p,#error-msg p{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:10px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #error-msg h2{font-size:16px;color:var(--red);margin-bottom:8px}
+  #data-section{display:none}#data-section.show{display:block}
+
+  @media(max-width:600px){
+    header{padding:12px 14px}main{padding:14px}.kpi-val{font-size:20px}
+    th:nth-child(5),td:nth-child(5),th:nth-child(7),td:nth-child(7){display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">HORAS<span>EXTRAS</span></div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div id="status"><span class="dot spin" id="dot"></span><span id="status-txt">Carregando...</span></div>
+    <button class="btn-refresh" onclick="carregar()">&#8635; Atualizar</button>
+  </div>
+</header>
+
+<main>
+  <div id="loading" class="show"><div class="spinner"></div><p>Buscando dados da planilha...</p></div>
+  <div id="error-msg"><h2>Erro ao carregar</h2><p id="error-detail"></p></div>
+
+  <div id="data-section">
+    <div class="controls">
+      <h1>Controle de Horas Extras</h1>
+      <select id="sel-dia" onchange="aplicarFiltros()">
+        <option value="">Todos os dias</option>
+        <option value="segunda-feira">Segunda-feira</option>
+        <option value="terca-feira">Ter&ccedil;a-feira</option>
+        <option value="quarta-feira">Quarta-feira</option>
+        <option value="quinta-feira">Quinta-feira</option>
+        <option value="sexta-feira">Sexta-feira</option>
+        <option value="sabado">S&aacute;bado</option>
+        <option value="domingo">Domingo</option>
+      </select>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+    <div class="tabs" id="tabs"></div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head"><h2>Registro por Dia</h2><span id="tbl-count"></span></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th><th>Dia</th>
+            <th class="r">H. Prog.</th><th class="r">H. Feitas</th>
+            <th class="r">Diferen&ccedil;a</th><th class="r">Val. Prog.</th><th class="r">Val. Feito</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="pag">
+        <span id="pag-info"></span>
+        <button id="btn-prev" onclick="trocarPag(-1)">&larr; Anterior</button>
+        <button id="btn-next" onclick="trocarPag(1)">Pr&oacute;ximo &rarr;</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// ─── COLE A URL DO APPS SCRIPT AQUI ───────────────────────────
+var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzeNiHmdEnupG0aooJ6fU4WTYvZnhGu0fpWuFEJUhcObhW4v1rn0VKpQIHLWcBDewqv1Q/exec";
+// ──────────────────────────────────────────────────────────────
+
+var POR_PAG = 30;
+var FDS = ["sabado","sábado","domingo"];
+var todos = [], filtrados = [], pagina = 1, mesSel = "todos", valorHora = 23;
+
+function setStatus(est, txt) {
+  document.getElementById("dot").className = "dot " + est;
+  document.getElementById("status-txt").textContent = txt;
+}
+
+// JSONP — evita bloqueio de CORS do Apps Script
+function carregar() {
+  mostrar("loading");
+  setStatus("spin", "Carregando...");
+
+  // remove script anterior se existir
+  var old = document.getElementById("jsonp-script");
+  if (old) old.parentNode.removeChild(old);
+
+  // timeout de segurança
+  var timer = setTimeout(function() {
+    mostrar("error");
+    document.getElementById("error-detail").textContent = "Tempo esgotado. Verifique a URL do Apps Script.";
+    setStatus("err", "Erro ao carregar");
+  }, 15000);
+
+  window._jsonpCallback = function(data) {
+    clearTimeout(timer);
+    try {
+      if (data.status !== "ok") throw new Error(data.mensagem || "Erro desconhecido");
+      valorHora = data.dados.valorHora || 23;
+      todos = data.dados.registros || [];
+      if (!todos.length) throw new Error("Nenhum registro encontrado.");
+
+      // normaliza dia (remove acentos para comparação)
+      todos.forEach(function(r) {
+        r.diaNorm = normalizarDia(r.dia);
+      });
+
+      mesSel = "todos";
+      construirTabs();
+      aplicarFiltros();
+      mostrar("data");
+      setStatus("ok", "Atualizado às " + new Date().toLocaleTimeString("pt-BR"));
+    } catch(e) {
+      mostrar("error");
+      document.getElementById("error-detail").textContent = e.message;
+      setStatus("err", "Erro ao carregar");
+    }
+  };
+
+  var script = document.createElement("script");
+  script.id = "jsonp-script";
+  script.src = SCRIPT_URL + "?callback=_jsonpCallback";
+  script.onerror = function() {
+    clearTimeout(timer);
+    mostrar("error");
+    document.getElementById("error-detail").textContent = "Falha ao acessar o Apps Script. Verifique a URL e as permissões.";
+    setStatus("err", "Erro ao carregar");
+  };
+  document.head.appendChild(script);
+}
+
+function normalizarDia(d) {
+  return (d || "").toLowerCase()
+    .replace(/ç/g,"c").replace(/ã/g,"a").replace(/á/g,"a")
+    .replace(/é/g,"e").replace(/ê/g,"e").replace(/í/g,"i")
+    .replace(/ó/g,"o").replace(/ô/g,"o").replace(/ú/g,"u");
+}
+
+function mostrar(q) {
+  document.getElementById("loading").classList.toggle("show", q === "loading");
+  document.getElementById("error-msg").classList.toggle("show", q === "error");
+  document.getElementById("data-section").classList.toggle("show", q === "data");
+}
+
+function construirTabs() {
+  var meses = {};
+  todos.forEach(function(r) {
+    if (!meses[r.mesAno]) {
+      var partes = r.mesAno.split("-");
+      var d = new Date(Number(partes[0]), Number(partes[1]) - 1, 1);
+      var lbl = d.toLocaleDateString("pt-BR", {month:"long", year:"numeric"});
+      meses[r.mesAno] = lbl.charAt(0).toUpperCase() + lbl.slice(1);
+    }
+  });
+  var sorted = Object.keys(meses).sort();
+  var h = '<div class="tab ' + (mesSel === "todos" ? "active" : "") + '" onclick="setMes(\'todos\')">Todos</div>';
+  sorted.forEach(function(k) {
+    h += '<div class="tab ' + (mesSel === k ? "active" : "") + '" onclick="setMes(\'' + k + '\')">' + meses[k] + '</div>';
+  });
+  document.getElementById("tabs").innerHTML = h;
+}
+
+function setMes(k) { mesSel = k; construirTabs(); aplicarFiltros(); }
+
+function aplicarFiltros() {
+  var diaSel = normalizarDia(document.getElementById("sel-dia").value);
+  pagina = 1;
+  filtrados = todos.filter(function(r) {
+    if (mesSel !== "todos" && r.mesAno !== mesSel) return false;
+    if (diaSel && r.diaNorm !== diaSel) return false;
+    return true;
+  });
+  renderKPIs(filtrados);
+  renderTabela();
+}
+
+function renderKPIs(rows) {
+  var totHP = 0, totHF = 0, totVP = 0, totVF = 0;
+  rows.forEach(function(r) { totHP += r.hProg; totHF += r.hFeit; totVP += r.vProg; totVF += r.vFeit; });
+  var dH = totHF - totHP, dV = totVF - totVP;
+  var pct = totHP > 0 ? (totHF / totHP) * 100 : 0;
+
+  function fh(v) { return v.toLocaleString("pt-BR", {minimumFractionDigits:1, maximumFractionDigits:1}); }
+  function fr(v) { return "R$ " + v.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function sH(v) { return (v >= 0 ? "+" : "") + fh(v); }
+  function sR(v) { return (v >= 0 ? "+" : "-") + " R$ " + Math.abs(v).toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  document.getElementById("kpis").innerHTML =
+    '<div class="kpi">' +
+      '<div class="kpi-label">Horas Programadas</div>' +
+      '<div class="kpi-val">' + fh(totHP) + '<small>h</small></div>' +
+      '<div class="kpi-sub">' + rows.length + ' dias no per&iacute;odo</div>' +
+    '</div>' +
+    '<div class="kpi blue">' +
+      '<div class="kpi-label">Horas Feitas</div>' +
+      '<div class="kpi-val">' + fh(totHF) + '<small>h</small></div>' +
+      '<div class="kpi-sub">' + pct.toFixed(1) + '% do programado</div>' +
+      '<div class="prog-wrap"><div class="prog-bar" style="width:' + Math.min(pct,100) + '%;background:' + (dH >= 0 ? 'var(--green)' : 'var(--red)') + '"></div></div>' +
+    '</div>' +
+    '<div class="kpi ' + (dH >= 0 ? 'green' : 'red') + '">' +
+      '<div class="kpi-label">Diferen&ccedil;a de Horas</div>' +
+      '<div class="kpi-val ' + (dH >= 0 ? 'pos' : 'neg') + '">' + sH(dH) + '<small>h</small></div>' +
+      '<div class="kpi-sub">' + (dH >= 0 ? 'Acima' : 'Abaixo') + ' do planejado</div>' +
+    '</div>' +
+    '<div class="kpi">' +
+      '<div class="kpi-label">Valor Programado</div>' +
+      '<div class="kpi-val" style="font-size:19px">' + fr(totVP) + '</div>' +
+      '<div class="kpi-sub">R$' + valorHora + '/h &times; ' + fh(totHP) + 'h</div>' +
+    '</div>' +
+    '<div class="kpi ' + (dV >= 0 ? 'green' : 'red') + '">' +
+      '<div class="kpi-label">Valor Feito</div>' +
+      '<div class="kpi-val ' + (dV >= 0 ? 'pos' : 'neg') + '" style="font-size:19px">' + fr(totVF) + '</div>' +
+      '<div class="kpi-sub">' + sR(dV) + ' vs programado</div>' +
+    '</div>';
+}
+
+function renderTabela() {
+  var ini = (pagina - 1) * POR_PAG, fim = ini + POR_PAG;
+  var pag = filtrados.slice(ini, fim), tot = filtrados.length;
+  document.getElementById("tbl-count").textContent = tot + " registros";
+  document.getElementById("pag-info").textContent = (ini+1) + "–" + Math.min(fim,tot) + " de " + tot;
+  document.getElementById("btn-prev").disabled = pagina === 1;
+  document.getElementById("btn-next").disabled = fim >= tot;
+
+  function fh(v) { return v.toLocaleString("pt-BR", {minimumFractionDigits:1, maximumFractionDigits:2}); }
+  function fr(v) { return "R$ " + v.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ""; }
+
+  var h = "";
+  pag.forEach(function(r) {
+    var isFDS = FDS.indexOf(r.diaNorm) >= 0;
+    var dH = r.hFeit - r.hProg;
+    var cl = dH > 0 ? "pos" : dH < 0 ? "neg" : "";
+    h += "<tr>" +
+      '<td class="mu">' + r.data + "</td>" +
+      "<td><span class=\"badge " + (isFDS ? "we" : "wd") + "\">" + cap(r.dia) + "</span></td>" +
+      '<td class="r">' + fh(r.hProg) + "h</td>" +
+      '<td class="r ' + (r.hFeit === 0 ? "zo" : "") + '">' + fh(r.hFeit) + "h</td>" +
+      '<td class="r ' + cl + '">' + (dH >= 0 ? "+" : "") + fh(dH) + "h</td>" +
+      '<td class="r">' + fr(r.vProg) + "</td>" +
+      '<td class="r ' + (r.vFeit === 0 ? "zo" : "") + '">' + fr(r.vFeit) + "</td>" +
+    "</tr>";
+  });
+  document.getElementById("tbody").innerHTML = h;
+}
+
+function trocarPag(dir) {
+  pagina += dir;
+  renderTabela();
+  window.scrollTo({top: document.querySelector(".tbl-wrap").offsetTop - 80, behavior: "smooth"});
+}
+
+carregar();
+</script>
+</body>
+</html>
