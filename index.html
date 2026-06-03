@@ -214,6 +214,33 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
 .pag button:hover{border-color:var(--accent);color:var(--accent)}
 .pag button:disabled{opacity:.3;cursor:default}
 
+/* LANÇAR */
+.lc-field{margin-bottom:14px}
+.lc-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.lc-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;padding:10px 14px;border-radius:9px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.lc-input:focus{border-color:var(--accent)}
+.lc-input[readonly]{color:var(--muted);cursor:default}
+.lc-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lc-preview{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:16px;margin-top:4px}
+.lc-preview-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.lc-preview-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.lc-prev-item .lc-prev-label{font-size:10px;color:var(--muted);margin-bottom:2px}
+.lc-prev-item .lc-prev-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500}
+.lc-btn{width:100%;padding:13px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .2s;letter-spacing:.3px}
+.lc-btn:hover{opacity:.85}
+.lc-btn:disabled{opacity:.4;cursor:default}
+.lc-btn.loading{opacity:.6;cursor:default}
+
+.lc-hist-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.lc-hist-row{display:grid;grid-template-columns:90px 90px 60px 60px 80px;gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap}
+.lc-hist-row:last-child{border-bottom:none}
+.lc-hist-row.header{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:600;padding-bottom:8px}
+
+@media(max-width:480px){
+  .lc-grid2{grid-template-columns:1fr}
+  .lc-preview-grid{grid-template-columns:1fr 1fr}
+}
+
 /* ANÁLISE */
 .analise-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 .insight-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;position:relative;overflow:hidden}
@@ -292,6 +319,7 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
   <button class="nav-tab" onclick="showTab('comparativo',this)">Comparativo</button>
   <button class="nav-tab" onclick="showTab('diario',this)">Registro Diário</button>
   <button class="nav-tab" onclick="showTab('analise',this)">✦ Análise</button>
+  <button class="nav-tab" onclick="showTab('lancar',this)">+ Lançar</button>
 </div>
 
 <!-- VISÃO GERAL -->
@@ -390,6 +418,61 @@ tr.row-hoje{box-shadow:inset 3px 0 0 var(--accent)}
 <!-- ANÁLISE -->
 <div class="section" id="tab-analise">
   <div id="analise-content"></div>
+</div>
+
+<!-- LANÇAR -->
+<div class="section" id="tab-lancar">
+  <div style="max-width:520px;margin:0 auto">
+
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-title">Registrar Hora Extra</div>
+
+      <div class="lc-field">
+        <label class="lc-label">Data</label>
+        <input class="lc-input" type="date" id="lc-data">
+      </div>
+
+      <div class="lc-field">
+        <label class="lc-label">Dia da Semana</label>
+        <input class="lc-input" type="text" id="lc-dia" readonly placeholder="Preenchido automaticamente">
+      </div>
+
+      <div class="lc-grid2">
+        <div class="lc-field">
+          <label class="lc-label">Horas Programadas</label>
+          <input class="lc-input" type="number" id="lc-hprog" placeholder="3.0" step="0.1" min="0">
+        </div>
+        <div class="lc-field">
+          <label class="lc-label">Horas Feitas</label>
+          <input class="lc-input" type="number" id="lc-hfeit" placeholder="3.5" step="0.1" min="0">
+        </div>
+      </div>
+
+      <div class="lc-field">
+        <label class="lc-label">Valor por Hora (R$)</label>
+        <input class="lc-input" type="number" id="lc-valor" placeholder="23.00" step="0.01" min="0">
+      </div>
+
+      <!-- Preview -->
+      <div class="lc-preview" id="lc-preview" style="display:none">
+        <div class="lc-preview-title">Prévia do lançamento</div>
+        <div class="lc-preview-grid" id="lc-preview-grid"></div>
+      </div>
+
+      <button class="lc-btn" id="lc-submit" onclick="lancar()">Registrar na Planilha</button>
+    </div>
+
+    <!-- Histórico de lançamentos recentes -->
+    <div class="panel">
+      <div class="panel-title">Últimos Lançamentos <span class="panel-hint" id="lc-hist-info"></span></div>
+      <div class="lc-hist-wrap">
+        <div id="lc-historico">
+          <div style="text-align:center;padding:30px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">Carregue os dados para ver o histórico</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 </div><!-- /main -->
@@ -1046,6 +1129,134 @@ function insightCard(cls,icon,title,val,vcls,desc){
   '</div>';
 }
 
+// ── LANÇAR ────────────────────────────────────────────────────
+var DIAS_PT=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+
+function initLancar(){
+  // Data padrão = hoje
+  var h=dataHoje();
+  var pad=function(n){return String(n).padStart(2,'0');};
+  document.getElementById('lc-data').value=h.getFullYear()+'-'+pad(h.getMonth()+1)+'-'+pad(h.getDate());
+  document.getElementById('lc-valor').value=STATE.valorHora||23;
+  atualizarDia();
+  renderHistorico();
+  document.getElementById('lc-data').addEventListener('change',atualizarDia);
+  document.getElementById('lc-hprog').addEventListener('input',atualizarPreview);
+  document.getElementById('lc-hfeit').addEventListener('input',atualizarPreview);
+  document.getElementById('lc-valor').addEventListener('input',atualizarPreview);
+}
+
+function atualizarDia(){
+  var val=document.getElementById('lc-data').value;
+  if(!val) return;
+  var d=new Date(val+'T12:00:00');
+  document.getElementById('lc-dia').value=DIAS_PT[d.getDay()];
+  atualizarPreview();
+}
+
+function atualizarPreview(){
+  var hProg=parseFloat(document.getElementById('lc-hprog').value)||0;
+  var hFeit=parseFloat(document.getElementById('lc-hfeit').value)||0;
+  var valor=parseFloat(document.getElementById('lc-valor').value)||0;
+  var prev=document.getElementById('lc-preview');
+  if(!hProg&&!hFeit){prev.style.display='none';return;}
+  prev.style.display='block';
+  var vProg=(hProg*valor), vFeit=(hFeit*valor), diff=hFeit-hProg;
+  var cl=diff>=0?'var(--green)':'var(--red)';
+  document.getElementById('lc-preview-grid').innerHTML=
+    prevItem('H. Programadas',fh(hProg)+'h','')+
+    prevItem('H. Feitas',fh(hFeit)+'h',hFeit>=hProg?'var(--green)':'var(--red)')+
+    prevItem('Diferença',(diff>=0?'+':'')+fh(diff)+'h',cl)+
+    prevItem('Val. Prog.',fr(vProg),'')+
+    prevItem('Val. Feito',fr(vFeit),hFeit>=hProg?'var(--green)':'var(--red)')+
+    prevItem('Saldo',(diff>=0?'+':'')+fr(diff*valor),cl);
+}
+
+function prevItem(lbl,val,cor){
+  return '<div class="lc-prev-item">'+
+    '<div class="lc-prev-label">'+lbl+'</div>'+
+    '<div class="lc-prev-val"'+(cor?' style="color:'+cor+'"':'')+'>'+val+'</div>'+
+  '</div>';
+}
+
+function lancar(){
+  var data=document.getElementById('lc-data').value;
+  var dia=document.getElementById('lc-dia').value;
+  var hProg=parseFloat(document.getElementById('lc-hprog').value);
+  var hFeit=parseFloat(document.getElementById('lc-hfeit').value);
+  var valor=parseFloat(document.getElementById('lc-valor').value)||STATE.valorHora||23;
+
+  if(!data){alert('Informe a data!');return;}
+  if(isNaN(hProg)||isNaN(hFeit)){alert('Informe as horas!');return;}
+
+  var vProg=hProg*valor, vFeit=hFeit*valor;
+  var btn=document.getElementById('lc-submit');
+  btn.disabled=true; btn.classList.add('loading'); btn.textContent='Enviando...';
+
+  // Monta URL com parâmetros para doPost via JSONP
+  var params='?action=post&callback=_cbPost'+
+    '&data='+encodeURIComponent(data)+
+    '&dia='+encodeURIComponent(dia)+
+    '&hProg='+hProg+'&vProg='+vProg.toFixed(2)+
+    '&hFeit='+hFeit+'&vFeit='+vFeit.toFixed(2);
+
+  var old=document.getElementById('_jsonp_post');
+  if(old) old.parentNode.removeChild(old);
+
+  var timer=setTimeout(function(){
+    btn.disabled=false;btn.classList.remove('loading');btn.textContent='Registrar na Planilha';
+    toast('Tempo esgotado','err');
+  },15000);
+
+  window._cbPost=function(resp){
+    clearTimeout(timer);
+    btn.disabled=false;btn.classList.remove('loading');btn.textContent='Registrar na Planilha';
+    if(resp.status==='ok'){
+      toast('Lançado com sucesso! ✓','ok');
+      // Limpar horas feitas, manter data e valor
+      document.getElementById('lc-hprog').value='';
+      document.getElementById('lc-hfeit').value='';
+      document.getElementById('lc-preview').style.display='none';
+      // Recarregar dados
+      carregar();
+    } else {
+      toast(resp.mensagem||'Erro ao lançar','err');
+    }
+  };
+
+  var s=document.createElement('script');
+  s.id='_jsonp_post';
+  s.src=SCRIPT_URL+params;
+  s.onerror=function(){
+    clearTimeout(timer);
+    btn.disabled=false;btn.classList.remove('loading');btn.textContent='Registrar na Planilha';
+    toast('Falha ao conectar','err');
+  };
+  document.head.appendChild(s);
+}
+
+function renderHistorico(){
+  var R=STATE.registros;
+  if(!R||!R.length){return;}
+  var recentes=R.filter(function(r){return !isFuturo(r)&&r.hFeit>0;})
+    .slice().sort(function(a,b){return parseDataBR(b.data)-parseDataBR(a.data);})
+    .slice(0,8);
+
+  document.getElementById('lc-hist-info').textContent='últimos '+recentes.length+' registros';
+  var h='<div class="lc-hist-row header"><span>Data</span><span>Dia</span><span style="text-align:right">H.Prog</span><span style="text-align:right">H.Feitas</span><span style="text-align:right">Valor</span></div>';
+  recentes.forEach(function(r){
+    var dH=r.hFeit-r.hProg, cl=dH>=0?'var(--green)':'var(--red)';
+    h+='<div class="lc-hist-row">'+
+      '<span class="mu">'+r.data+'</span>'+
+      '<span>'+r.dia.charAt(0).toUpperCase()+r.dia.slice(1)+'</span>'+
+      '<span style="text-align:right;color:var(--muted)">'+fh(r.hProg)+'h</span>'+
+      '<span style="text-align:right;color:'+cl+'">'+fh(r.hFeit)+'h</span>'+
+      '<span style="text-align:right">'+fr(r.vFeit)+'</span>'+
+    '</div>';
+  });
+  document.getElementById('lc-historico').innerHTML=h;
+}
+
 function trocarPag(dir){
   pagina+=dir;renderTabela();
   window.scrollTo({top:document.querySelector('.tbl-wrap').offsetTop-80,behavior:'smooth'});
@@ -1065,6 +1276,7 @@ function showTab(id,btn){
   if(id==='analise') setTimeout(function(){
     document.querySelectorAll('.ranking-bar-fill[data-w]').forEach(function(b){b.style.width=b.dataset.w+'%';});
   },80);
+  if(id==='lancar'){initLancar();}
 }
 
 window.addEventListener('resize',function(){buildSpark(STATE.monthly);});
