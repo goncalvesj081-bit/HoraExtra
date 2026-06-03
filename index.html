@@ -637,6 +637,44 @@ function renderComparativo(){
 }
 
 // CARD DE RESUMO (todos os meses)
+function renderResumoGeral(){
+  var M=STATE.monthly, R=STATE.registros;
+  if(!M.length) return '';
+  var hoje=dataHoje();
+  var passados=R.filter(function(r){return !isFuturo(r);});
+  var totHP=passados.reduce(function(s,r){return s+r.hProg;},0);
+  var totHF=passados.reduce(function(s,r){return s+r.hFeit;},0);
+  var totVP=passados.reduce(function(s,r){return s+r.vProg;},0);
+  var totVF=passados.reduce(function(s,r){return s+r.vFeit;},0);
+  var dH=totHF-totHP, dV=totVF-totVP;
+  var taxa=totHP>0?(totHF/totHP*100):0;
+  var ok=taxa>=100;
+  var cor=ok?'var(--green)':taxa>=80?'var(--amber)':'var(--red)';
+  var pct=Math.min(taxa,100).toFixed(1);
+  var meses=M.length;
+  var periodo=M[0].mes.substring(0,3)+' → '+M[M.length-1].mes.substring(0,3);
+
+  return '<div class="proj-card">'+
+    '<div class="proj-top">'+
+      '<div><div class="proj-label">Resumo Geral · '+periodo+' · '+meses+' meses</div>'+
+      '<div class="proj-title">'+(ok?'✓ Meta geral atingida':taxa>=80?'⚡ Dentro do esperado':'⚠ Abaixo da meta geral')+'</div></div>'+
+      '<div class="proj-badge" style="background:'+(dH>=0?'var(--green-bg)':'var(--red-bg)')+';color:'+(dH>=0?'var(--green)':'var(--red)')+'">'+(dH>=0?'+':'')+fh(dH)+'h acumulado</div>'+
+    '</div>'+
+    '<div class="proj-stats">'+
+      pStat('H. Programadas',fh(totHP)+'h')+
+      pStat('H. Realizadas',fh(totHF)+'h')+
+      pStat('Diferença','<span style="color:'+(dH>=0?'var(--green)':'var(--red)')+'">'+(dH>=0?'+':'')+fh(dH)+'h</span>')+
+      pStat('Val. Programado',fr(totVP))+
+      pStat('Val. Realizado',fr(totVF))+
+      pStat('Saldo','<span style="color:'+(dV>=0?'var(--green)':'var(--red)')+'">'+(dV>=0?'+':'')+fr(dV)+'</span>')+
+    '</div>'+
+    '<div class="proj-prog-wrap">'+
+      '<div class="proj-prog-bar" style="width:'+pct+'%;background:'+cor+'"></div>'+
+    '</div>'+
+    '<div class="proj-footer"><span>0h</span><span style="color:'+cor+'">'+taxa.toFixed(1)+'% realizado</span><span>meta: '+fh(totHP)+'h</span></div>'+
+  '</div>';
+}
+
 function renderProjecao(){
   var hoje=dataHoje();
   var mesAtualKey=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
@@ -746,9 +784,8 @@ function aplicarFiltros(){
     return true;
   });
   var hoje=dataHoje();
-  var mesKey=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0');
-  var mostra=mesSel==='todos'||mesSel===mesKey||STATE.monthly.some(function(m){return m.key===mesSel;});
-  document.getElementById('proj-wrap').innerHTML=mostra?renderProjecao():'';
+  var mostra=mesSel!=='todos';
+  document.getElementById('proj-wrap').innerHTML=mostra?renderProjecao():renderResumoGeral();
   renderTabela();
 }
 
